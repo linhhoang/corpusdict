@@ -1,8 +1,5 @@
-# word align extract to dictionary
-# author: kieutran
 import collections
 import nltk
-
 
 def is_begin_match(token):
     return '({' == token
@@ -41,6 +38,7 @@ with open('../data/vn_en.align.A3.final', 'r') as align_result:
             en_corpus_line_tokens = en_corpus_lines[corpus_line_number - 1].split()
             pos_tag_source_token_list = nltk.pos_tag(en_corpus_line_tokens)
             word_token_index = 0
+            ptag = None
 
             for i in range(len(source_token_list)):
                 token = source_token_list[i]
@@ -53,20 +51,25 @@ with open('../data/vn_en.align.A3.final', 'r') as align_result:
                         else:
                             matched_token_list = corpusdic[previous_token]
                     else:
-                        word_token_index += 1
-                        ptag = pos_tag_source_token_list[word_token_index - 1]
-                        print(ptag)
+                        if token != 'NULL':
+                            word_token_index += 1
+                            ptag = pos_tag_source_token_list[word_token_index - 1]
+                            #token += '-' + ptag[1]
+
                         previous_token = token
                 else:
                     if is_end_match(token):
                         flag = True
                         corpusdic[previous_token] = matched_token_list
                     else:
-                        target_item = target_token_list[int(token) - 1]
-                        if target_item in matched_token_list.keys():
-                            matched_token_list[target_item] += 1
-                        else:
-                            matched_token_list[target_item] = 1
+                        if ptag is not None:
+                            target_item = target_token_list[int(token) - 1]
+                            if matched_token_list.get(ptag[1]) is None:
+                                matched_token_list[ptag[1]] = {}
+                            if target_item in matched_token_list[ptag[1]].keys():
+                                matched_token_list[ptag[1]][target_item] += 1
+                            else:
+                                matched_token_list[ptag[1]][target_item] = 1
 
 
 odcorpus = collections.OrderedDict(sorted(corpusdic.items()))
@@ -78,7 +81,6 @@ def has_item(items):
             return True
     return False
 
-'''
 for key, value in odcorpus.items():
     if has_item(value.items()):
         print(key + ' : ')
@@ -86,4 +88,3 @@ for key, value in odcorpus.items():
             if iv > 1:
                 print(ik + '(' + str(iv) + ')', end=',')
         print('\r\n')
-'''
