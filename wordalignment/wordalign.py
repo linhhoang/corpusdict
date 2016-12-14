@@ -32,6 +32,11 @@ def has_item(items):
                 return True
     return False
 
+def has_data(items):
+    for k1, v1 in items:
+        if v1 > 1:
+            return True
+    return False
 
 def get_group_target_item(token, i, source_token_list, target_token_list):
     count = 0
@@ -118,15 +123,24 @@ def main():
 
     odcorpus = collections.OrderedDict(sorted(corpusdic.items()))
 
-    for key, value in odcorpus.items():
-        if has_item(value.items()):
-            print(key + ' : ')
-            for ik, iv in value.items():
-                if iv > 1:
-                    print(ik + '(' + str(iv) + ')', end=',')
-            print('\r\n')
+    with open('../data/output/anhviet.dict', 'w') as anhviet_dict:
+        for key, value in odcorpus.items():
+            if has_item(value.items()):
+                anhviet_dict.write('@' + key + '\n')
+                for ik, iv in value.items():
+                    if has_data(iv.items()):
+                        anhviet_dict.write(' * ' + ik + '\n')
+                        is_first = True
+                        for k, v in iv.items():
+                            if v > 1:
+                                if is_first:
+                                    anhviet_dict.write(' - ' + k)
+                                    is_first = False
+                                else:
+                                    anhviet_dict.write(', ' + k)
+                        anhviet_dict.write('\r\n')
+
+                anhviet_dict.write('\r\n')
+
 
 main()
-
-
-
