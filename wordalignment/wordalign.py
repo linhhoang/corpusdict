@@ -1,6 +1,7 @@
 import collections
 import nltk
 from nltk.stem import WordNetLemmatizer
+import math
 
 wordnet_lemmatizer = WordNetLemmatizer()
 
@@ -34,7 +35,7 @@ def has_item(items):
 
 def has_data(items):
     for k1, v1 in items:
-        if v1 > 1:
+        if v1 >= 1:
             return True
     return False
 
@@ -51,6 +52,59 @@ def get_group_target_item(token, i, source_token_list, target_token_list):
         count += 1
 
     return group_target_item, count
+
+
+def write_dict_file(file_path, dict_items):
+    with open(file_path, 'w') as anhviet_dict:
+        count = 0
+        for key, value in dict_items:
+            if has_item(value.items()):
+                count +=1
+                anhviet_dict.write('@' + key + '\n')
+                for ik, iv in value.items():
+                    if has_data(iv.items()):
+                        anhviet_dict.write(' * ' + ik + '\n')
+                        is_first = True
+                        for k, v in iv.items():
+                            if v >= 1:
+                                if is_first:
+                                    anhviet_dict.write(' - ' + k)
+                                    is_first = False
+                                else:
+                                    anhviet_dict.write(', ' + k)
+                        anhviet_dict.write('\r\n')
+
+                anhviet_dict.write('\r\n')
+
+        print('Amount of headlist item: ' + str(count))
+
+
+def convert64basis(n):
+    s = n
+    c64s = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
+    result = ''
+    while s > 0:
+        r = s % 64
+        s = math.floor(s / 64)
+        result = c64s[r - 1] + result
+
+    return result
+
+
+def write_dict_index_file(dict_file_path, file_path):
+    with open(file_path, 'w') as anhviet_dict_index:
+        dict_lines = open(dict_file_path, 'r').readlines()
+        offset = 0
+        word = ''
+        for line in dict_lines:
+            word_len = len(line)
+            if word_len < 2:
+                continue
+            if '@'.__eq__(line[0]):
+                word = line[1:word_len -1]
+            elif ' -'.__eq__(line[:2]):
+                anhviet_dict_index.write(word + '\t' + convert64basis(offset) + '\t' + convert64basis(len(line)) + '\r\n')
+            offset += len(line)
 
 
 def main():
@@ -123,24 +177,10 @@ def main():
 
     odcorpus = collections.OrderedDict(sorted(corpusdic.items()))
 
-    with open('../data/output/anhviet.dict', 'w') as anhviet_dict:
-        for key, value in odcorpus.items():
-            if has_item(value.items()):
-                anhviet_dict.write('@' + key + '\n')
-                for ik, iv in value.items():
-                    if has_data(iv.items()):
-                        anhviet_dict.write(' * ' + ik + '\n')
-                        is_first = True
-                        for k, v in iv.items():
-                            if v > 1:
-                                if is_first:
-                                    anhviet_dict.write(' - ' + k)
-                                    is_first = False
-                                else:
-                                    anhviet_dict.write(', ' + k)
-                        anhviet_dict.write('\r\n')
+    print('> Creating dictionary data ...')
+    write_dict_file('../data/output/anhviet.dict', odcorpus.items())
 
-                anhviet_dict.write('\r\n')
-
+    print('> Creating dictionary index ...')
+    write_dict_index_file('../data/output/anhviet.dict', '../data/output/anhviet_dict.index')
 
 main()
