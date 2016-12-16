@@ -1,7 +1,6 @@
 import collections
 import nltk
 from nltk.stem import WordNetLemmatizer
-import math
 
 wordnet_lemmatizer = WordNetLemmatizer()
 
