@@ -102,7 +102,7 @@ def write_dict_index_file(dict_file_path, file_path):
             if '@'.__eq__(line[0]):
                 word = line[1:word_len -1]
             elif ' -'.__eq__(line[:2]):
-                anhviet_dict_index.write(word + '\t' + convert64basis(offset) + '\t' + convert64basis(len(line)) + '\r\n')
+                anhviet_dict_index.write(word + '\t' + convert''(offset) + '\t' + convert64basis(len(line)) + '\r\n')
             offset += len(line)
 
 
